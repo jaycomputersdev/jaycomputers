@@ -12,7 +12,7 @@ const services = [
 ];
 
 export default function Header() {
-  const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "#";
+  const adminUrl = "https://admin-jaycomputers.vercel.app/login";
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function Header() {
           <a href={adminUrl} className="text-sm font-medium text-slate hover:text-blue hidden lg:inline">Staff login</a>
           <a
             href="tel:+919594243527"
-            className="btn-pill !px-3 sm:!px-5 !py-2 text-xs sm:text-sm whitespace-nowrap"
+            className="btn-pill px-3! sm:px-5! py-2! text-xs sm:text-sm whitespace-nowrap"
           >
             📞 <span className="hidden min-[380px]:inline">Call Now</span>
           </a>
@@ -132,7 +132,7 @@ export default function Header() {
       {/* Logo modal */}
       {logoOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 px-4"
           onClick={() => setLogoOpen(false)}
         >
           <div

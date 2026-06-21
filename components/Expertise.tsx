@@ -66,7 +66,7 @@ export default function Expertise() {
           <p className="text-blue-light text-sm leading-relaxed mb-6">{tab.body}</p>
           <a href="#contact" className="btn-primary inline-block">Explore More</a>
         </div>
-        <div className="photo-slot h-64 md:h-[420px] rounded-none border-0 p-0 overflow-hidden">
+        <div className="photo-slot h-64 md:h-105 rounded-none border-0 p-0 overflow-hidden">
           <img
             src={tab.image}
             alt={tab.label}
