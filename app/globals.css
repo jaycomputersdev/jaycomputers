@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  --color-navy: #0F2A4A;
+  --color-blue: #1A5FB4;
+  --color-blue-light: #2E7CD6;
+  --color-blue-pale: #EAF2FC;
+  --color-amber: #E8A317;
+  --color-paper: #F7F9FC;
+  --color-ink: #14213D;
+  --color-slate: #5B6B82;
+  --color-line: #DCE4F0;
+  --color-white: #FFFFFF;
+
+  --font-display: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-body: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+@theme inline {
+  --color-navy: var(--color-navy);
+  --color-blue: var(--color-blue);
+  --color-blue-light: var(--color-blue-light);
+  --color-blue-pale: var(--color-blue-pale);
+  --color-amber: var(--color-amber);
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-slate: var(--color-slate);
+  --color-line: var(--color-line);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+.btn-primary {
+  background: var(--color-blue);
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.85rem 1.6rem;
+  transition: background 0.15s ease;
+  display: inline-block;
+}
+.btn-primary:hover { background: var(--color-navy); }
+
+.btn-whatsapp {
+  background: #25D366;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.85rem 1.6rem;
+  transition: filter 0.15s ease;
+  display: inline-block;
+}
+.btn-whatsapp:hover { filter: brightness(0.92); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-blue);
+  font-weight: 600;
+  border: 1.5px solid var(--color-blue);
+  border-radius: 8px;
+  padding: 0.8rem 1.55rem;
+  transition: background 0.15s ease, color 0.15s ease;
+  display: inline-block;
+}
+.btn-outline:hover { background: var(--color-blue); color: white; }
+
+.btn-pill {
+  background: var(--color-blue);
+  color: white;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.55rem 1.3rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.15s ease;
+}
+.btn-pill:hover { background: var(--color-navy); }
+
+.photo-slot {
+  background: linear-gradient(135deg, var(--color-blue-pale), #DCE9FB);
+  border: 1.5px dashed #9DBCE8;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-slate);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.form-input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-size: 0.95rem;
+}
+.form-input:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 1px;
+}
