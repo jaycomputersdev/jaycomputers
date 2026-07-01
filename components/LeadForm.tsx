@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 
+const CLIENT_WHATSAPP_NUMBER = "919594243527"; // no + or spaces, country code + number
+
 export default function LeadForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
 
@@ -8,15 +10,48 @@ export default function LeadForm() {
     e.preventDefault();
     setStatus("sending");
     const form = new FormData(e.currentTarget);
+    const data = Object.fromEntries(form) as Record<string, string>;
+
+    // Open a blank tab synchronously (inside the click handler) so browsers
+    // don't treat it as a blocked popup. We fill in the real URL once we
+    // know the Firestore save succeeded.
+    const waWindow = window.open("", "_blank");
+
     try {
-      await fetch("/api/lead", {
+      const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(form)),
+        body: JSON.stringify(data),
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to save lead");
+      }
+
       setStatus("sent");
-    } catch {
+
+      const message =
+        `New Lead from Website:\n` +
+        `Name: ${data.name}\n` +
+        `Phone: ${data.phone}\n` +
+        `Service: ${data.service}\n` +
+        `Location: ${data.location}\n` +
+        `Message: ${data.message || "-"}`;
+
+      const waUrl = `https://wa.me/${CLIENT_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+      if (waWindow) {
+        waWindow.location.href = waUrl;
+      } else {
+        // Popup was blocked despite our workaround (rare) — fall back to
+        // navigating the current tab isn't ideal, so just let the user know.
+        console.warn("WhatsApp tab was blocked by the browser.");
+      }
+    } catch (error) {
+      console.error("Lead submission error:", error);
       setStatus("idle");
+      if (waWindow) waWindow.close();
     }
   }
 

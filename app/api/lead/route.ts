@@ -16,6 +16,20 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export async function POST(req: NextRequest) {
+  // Fail fast with a clear message if env vars are missing in this environment
+  // (this is exactly what happened before Vercel env vars were configured).
+  const missingKeys = Object.entries(firebaseConfig)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingKeys.length > 0) {
+    console.error("Missing Firebase env vars:", missingKeys.join(", "));
+    return NextResponse.json(
+      { error: `Server misconfiguration: missing ${missingKeys.join(", ")}` },
+      { status: 500 }
+    );
+  }
+
   try {
     const { name, phone, service, location, message } = await req.json();
 
@@ -35,6 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Lead error:", err);
-    return NextResponse.json({ error: "Failed to save lead." }, { status: 500 });
+    const detail = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to save lead: ${detail}` }, { status: 500 });
   }
 }
