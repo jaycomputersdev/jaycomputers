@@ -6,50 +6,45 @@ const CLIENT_WHATSAPP_NUMBER = "919594243527"; // no + or spaces, country code +
 export default function LeadForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("sending");
     const form = new FormData(e.currentTarget);
     const data = Object.fromEntries(form) as Record<string, string>;
 
-    // Build and open the WhatsApp link IMMEDIATELY and synchronously, inside
-    // the click handler itself. We must not `await` anything before this —
-    // Chrome only allows window.open to bypass its popup blocker while the
-    // call is still directly inside the original click's trusted context.
-    // If we open it after an `await fetch(...)`, Chrome silently drops it.
+    // Fully synchronous, mirroring the known-working QueryForm pattern:
+    // no async/await anywhere in this function. window.open() runs as the
+    // very first thing, directly inside the click handler's call stack,
+    // so browsers never have a reason to treat it as a blocked popup.
     const message =
-      `New Lead from Website:\n` +
-      `Name: ${data.name}\n` +
-      `Phone: ${data.phone}\n` +
-      `Service: ${data.service}\n` +
-      `Location: ${data.location}\n` +
-      `Message: ${data.message || "-"}`;
+      `*New Lead from Website*%0A%0A` +
+      `*Name:* ${encodeURIComponent(data.name)}%0A` +
+      `*Phone:* ${encodeURIComponent(data.phone)}%0A` +
+      `*Service:* ${encodeURIComponent(data.service)}%0A` +
+      `*Location:* ${encodeURIComponent(data.location)}%0A` +
+      `*Message:* ${encodeURIComponent(data.message || "-")}`;
 
-    const waUrl = `https://api.whatsapp.com/send?phone=${CLIENT_WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    const waWindow = window.open(waUrl, "_blank");
+    const waUrl = `https://wa.me/${CLIENT_WHATSAPP_NUMBER}?text=${message}`;
+    window.open(waUrl, "_blank");
 
-    if (!waWindow) {
-      console.warn("WhatsApp tab was blocked by the browser's popup blocker.");
-    }
-
-    // Firestore save happens in parallel, not gating the WhatsApp tab.
-    try {
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+    // Firestore save is fire-and-forget — it does not gate or follow the
+    // WhatsApp tab in any way, so it can never delay or interfere with it.
+    fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Failed to save lead");
+        }
+        setStatus("sent");
+      })
+      .catch((error) => {
+        console.error("Lead submission error:", error);
+        setStatus("idle");
       });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to save lead");
-      }
-
-      setStatus("sent");
-    } catch (error) {
-      console.error("Lead submission error:", error);
-      setStatus("idle");
-    }
   }
 
   if (status === "sent") {
