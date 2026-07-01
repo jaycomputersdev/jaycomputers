@@ -12,11 +12,27 @@ export default function LeadForm() {
     const form = new FormData(e.currentTarget);
     const data = Object.fromEntries(form) as Record<string, string>;
 
-    // Open a blank tab synchronously (inside the click handler) so browsers
-    // don't treat it as a blocked popup. We fill in the real URL once we
-    // know the Firestore save succeeded.
-    const waWindow = window.open("", "_blank");
+    // Build and open the WhatsApp link IMMEDIATELY and synchronously, inside
+    // the click handler itself. We must not `await` anything before this —
+    // Chrome only allows window.open to bypass its popup blocker while the
+    // call is still directly inside the original click's trusted context.
+    // If we open it after an `await fetch(...)`, Chrome silently drops it.
+    const message =
+      `New Lead from Website:\n` +
+      `Name: ${data.name}\n` +
+      `Phone: ${data.phone}\n` +
+      `Service: ${data.service}\n` +
+      `Location: ${data.location}\n` +
+      `Message: ${data.message || "-"}`;
 
+    const waUrl = `https://api.whatsapp.com/send?phone=${CLIENT_WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+    const waWindow = window.open(waUrl, "_blank");
+
+    if (!waWindow) {
+      console.warn("WhatsApp tab was blocked by the browser's popup blocker.");
+    }
+
+    // Firestore save happens in parallel, not gating the WhatsApp tab.
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -30,28 +46,9 @@ export default function LeadForm() {
       }
 
       setStatus("sent");
-
-      const message =
-        `New Lead from Website:\n` +
-        `Name: ${data.name}\n` +
-        `Phone: ${data.phone}\n` +
-        `Service: ${data.service}\n` +
-        `Location: ${data.location}\n` +
-        `Message: ${data.message || "-"}`;
-
-      const waUrl = `https://wa.me/${CLIENT_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-
-      if (waWindow) {
-        waWindow.location.href = waUrl;
-      } else {
-        // Popup was blocked despite our workaround (rare) — fall back to
-        // navigating the current tab isn't ideal, so just let the user know.
-        console.warn("WhatsApp tab was blocked by the browser.");
-      }
     } catch (error) {
       console.error("Lead submission error:", error);
       setStatus("idle");
-      if (waWindow) waWindow.close();
     }
   }
 
